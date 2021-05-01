@@ -15,7 +15,6 @@
     dest: /etc/borgmatic/config.yaml
     mode: 0600
 
-# TODO: Currently, need to provision a /root/.ssh/known_hosts file
 - name: Initializing borg repository
   ansible.builtin.shell:
     cmd: >
