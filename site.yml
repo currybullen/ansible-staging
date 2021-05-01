@@ -10,8 +10,6 @@
     - role: users
       tags: always
       username: "{{ username }}"
-      password: "{{ password }}"
-      authorized_keys: "{{ authorized_keys }}"
 
     - role: podman
       tags: always

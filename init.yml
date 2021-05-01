@@ -1,0 +1,16 @@
+---
+
+- hosts: all
+  vars_prompt:
+
+  - name: username
+    prompt: Username of the non-root user?
+    private: no
+
+  - name: password
+    prompt: Password of the non-root user?
+    confirm: yes
+
+  become: true
+  roles:
+    - init

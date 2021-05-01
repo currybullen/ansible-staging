@@ -1,78 +1,55 @@
 ---
 
-  - name: Installing necessary packages
-    community.general.pacman: name={{ item }}
-    with_items:
-      - git
-      - sudo
-      - openssh
+- name: Installing necessary packages
+  community.general.pacman: name={{ item }}
+  with_items:
+    - git
+    - sudo
+    - openssh
 
-  - name: Creating user {{ username }}
-    ansible.builtin.user:
-      name: "{{ username }}"
-      groups: wheel
-      password: "{{ password | password_hash('sha512') }}"
-      generate_ssh_key: yes
-      ssh_key_type: "ed25519"
-      update_password: on_create
+- name: Cloning dotfiles for user {{ username }}
+  ansible.builtin.git:
+    bare: yes
+    repo: https://github.com/currybullen/dotfiles/
+    dest: /home/{{ username }}/.dotfiles
+  become: yes
+  become_user: "{{ username }}"
 
-  - name: Populating /home/{{ username }}/.ssh/authorized_keys
-    ansible.builtin.template:
-      src: authorized_keys.j2
-      dest: /home/{{ username }}/.ssh/authorized_keys
-      mode: 0644
-    become: yes
-    become_user: "{{ username }}"
+- name: Installing dotfiles for user {{ username }} (1/2)
+  ansible.builtin.command:
+    cmd: >
+      git --git-dir=/home/{{ username }}/.dotfiles/
+        --work-tree=/home/{{ username}}
+        reset HEAD
+    creates: /home/{{ username }}/.vimrc
+  become: yes
+  become_user: "{{ username }}"
 
-  - name: Giving the wheel group sudo privileges
-    ansible.builtin.lineinfile:
-      path: /etc/sudoers
-      regex: ^# %wheel ALL=\(ALL\) ALL$
-      line: "%wheel ALL=(ALL) ALL"
+- name: Installing dotfiles for user {{ username }} (2/2)
+  ansible.builtin.command:
+    cmd: >
+      git --git-dir=/home/{{ username }}/.dotfiles/
+        --work-tree=/home/{{ username}}
+        checkout /home/{{ username }}
+    creates: /home/{{ username }}/.vimrc
+  become: yes
+  become_user: "{{ username }}"
 
-  - name: Cloning dotfiles for user {{ username }}
-    ansible.builtin.git:
-      bare: yes
-      repo: https://github.com/currybullen/dotfiles/
-      dest: /home/{{ username }}/.dotfiles
-    become: yes
-    become_user: "{{ username }}"
+- name: Creating /home/{{ username }}/.vim/autoload directory
+  ansible.builtin.file:
+    path: /home/{{ username }}/.vim/autoload
+    state: directory
+  become: yes
+  become_user: "{{ username }}"
 
-  - name: Installing dotfiles for user {{ username }} (1/2)
-    ansible.builtin.command:
-      cmd: >
-        git --git-dir=/home/{{ username }}/.dotfiles/
-          --work-tree=/home/{{ username}}
-          reset HEAD
-      creates: /home/{{ username }}/.vimrc
-    become: yes
-    become_user: "{{ username }}"
+- name: Installing vim plugin manager vim-plug
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    dest: /home/{{ username }}/.vim/autoload/plug.vim
+  become: yes
+  become_user: "{{ username }}"
 
-  - name: Installing dotfiles for user {{ username }} (2/2)
-    ansible.builtin.command:
-      cmd: >
-        git --git-dir=/home/{{ username }}/.dotfiles/
-          --work-tree=/home/{{ username}}
-          checkout /home/{{ username }}
-      creates: /home/{{ username }}/.vimrc
-    become: yes
-    become_user: "{{ username }}"
-
-  - name: Creating /home/{{ username }}/.vim/autoload directory
-    ansible.builtin.file:
-      path: /home/{{ username }}/.vim/autoload
-      state: directory
-    become: yes
-    become_user: "{{ username }}"
-
-  - name: Installing vim plugin manager vim-plug
-    ansible.builtin.get_url:
-      url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-      dest: /home/{{ username }}/.vim/autoload/plug.vim
-    become: yes
-    become_user: "{{ username }}"
-
-  - name: Ensuring /home/{{ username }}/.bash_profile is absent
-    ansible.builtin.file:
-      path: /home/curry/.bash_profile
-      state: absent
+- name: Ensuring /home/{{ username }}/.bash_profile is absent
+  ansible.builtin.file:
+    path: /home/curry/.bash_profile
+    state: absent
