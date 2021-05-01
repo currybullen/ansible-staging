@@ -12,5 +12,50 @@
     confirm: yes
 
   become: true
-  roles:
-    - init
+  tasks:
+    - name: Creating user {{ username }}
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: wheel
+        password: "{{ password | password_hash('sha512') }}"
+        generate_ssh_key: yes
+        ssh_key_type: "ed25519"
+        update_password: on_create
+
+    - name: Populating /home/{{ username }}/.ssh/authorized_keys
+      ansible.builtin.lineinfile:
+        dest: /home/{{ username }}/.ssh/authorized_keys
+        line: "{{ item }}"
+        create: yes
+        mode: 0644
+      with_items: "{{ authorized_keys }}"
+      become: yes
+      become_user: "{{ username }}"
+
+    - name: Giving the wheel group sudo privileges
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        regex: ^# %wheel ALL=\(ALL\) ALL$
+        line: "%wheel ALL=(ALL) ALL"
+
+    - name: Disabling SSH password authentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regex: ^#*PasswordAuthentication yes$
+        line: PasswordAuthentication no
+      notify:
+        - Restart sshd
+
+    - name: Disabling SSH root access
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regex: ^#*PermitRootLogin (yes|prohibit-password)$
+        line: PermitRootLogin no
+      notify:
+        - Restart sshd
+
+  handlers:
+  - name: Restart sshd
+    ansible.builtin.service:
+      name: sshd
+      state: restarted
