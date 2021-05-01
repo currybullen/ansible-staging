@@ -1,0 +1,25 @@
+location:
+    source_directories:
+        - /
+
+    repositories:
+        - {{ repository }}
+
+    exclude_patterns:
+        - '/dev/*'
+        - '/mnt/*'
+        - '/proc/*'
+        - '/run/*'
+        - '/sys/*'
+        - '/tmp/*'
+
+    exclude_caches: true
+
+storage:
+    encryption_passphrase: {{ passphrase }}
+    lock_wait: 1200
+
+retention:
+    keep_daily: 7
+    keep_weekly: 4
+    keep_monthly: 6

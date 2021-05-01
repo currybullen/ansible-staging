@@ -1,0 +1,4 @@
+---
+
+- name: Installing necessary package(s)
+  community.general.pacman: name=syncthing

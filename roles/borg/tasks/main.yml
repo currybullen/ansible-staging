@@ -1,0 +1,45 @@
+---
+
+- name: Installing necessary packages
+  community.general.pacman: name={{ item }}
+  with_items:
+    - borg
+    - borgmatic
+
+- name: Creating /etc/borgmatic directory
+  ansible.builtin.file: path=/etc/borgmatic state=directory mode=0700
+
+- name: Installing borgmatic configuration file
+  ansible.builtin.template:
+    src: borg_config.j2
+    dest: /etc/borgmatic/config.yaml
+    mode: 0600
+
+# TODO: Currently, need to provision a /root/.ssh/known_hosts file
+- name: Initializing borg repository
+  ansible.builtin.shell:
+    cmd: >
+      borgmatic init --encryption=repokey-blake2 &&
+      touch /etc/borgmatic/.initiated
+    creates: /etc/borgmatic/.initiated
+
+- name: Copying systemd borgmatic service unit file
+  ansible.builtin.copy:
+    src: borgmatic.service
+    dest: /etc/systemd/system/borgmatic.service
+
+- name: Copying systemd borgmatic check unit file
+  ansible.builtin.copy:
+    src: borgmatic-check.service
+    dest: /etc/systemd/system/borgmatic-check.service
+
+- name: Copying systemd borgmatic check timer unit file
+  ansible.builtin.copy:
+    src: borgmatic-check.timer
+    dest: /etc/systemd/system/borgmatic-check.timer
+
+- name: Starting borgmatic.timer
+  ansible.builtin.systemd: name=borgmatic.timer state=started enabled=yes
+
+- name: Starting borgmatic-check.timer
+  ansible.builtin.systemd: name=borgmatic-check.timer state=started enabled=yes

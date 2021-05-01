@@ -1,0 +1,26 @@
+---
+
+- hosts: all
+  become: true
+  roles:
+    - role: general
+      tags: always
+      hostname: "{{ hostname }}"
+
+    - role: users
+      tags: always
+      username: "{{ username }}"
+      password: "{{ password }}"
+      authorized_keys: "{{ authorized_keys }}"
+
+    - role: podman
+      tags: always
+      username: "{{ username }}"
+
+    - role: borg
+      tags: backuped
+      repository: "{{ borg_repository }}"
+      passphrase: "{{ borg_passphrase }}"
+
+    - role: syncthing
+      tags: private

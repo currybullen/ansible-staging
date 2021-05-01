@@ -1,0 +1,26 @@
+---
+
+- name: Updating packages
+  community.general.pacman:
+    update_cache: yes
+    upgrade: yes
+
+- name: Setting hostname to {{ hostname }}
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Disabling SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regex: ^#*PasswordAuthentication yes$
+    line: PasswordAuthentication no
+  notify:
+    - Restart sshd
+
+- name: Disabling SSH root access
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regex: ^#*PermitRootLogin (yes|prohibit-password)$
+    line: PermitRootLogin no
+  notify:
+    - Restart sshd

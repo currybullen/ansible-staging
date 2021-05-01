@@ -1,0 +1,27 @@
+---
+
+  - name: Installing necessary packages
+    community.general.pacman: name={{ item }}
+    with_items:
+      - podman
+      - crun
+
+  - name: Creating /etc/subuid
+    ansible.builtin.copy:
+      dest: /etc/subuid
+      content: "{{ username }}:100000:65537"
+
+  - name: Creating /etc/subgid
+    ansible.builtin.copy:
+      dest: /etc/subgid
+      content: "{{ username }}:100000:65537"
+
+  - name: Adding unqualified registries
+    ansible.builtin.copy:
+      dest: /etc/containers/registries.conf.d/unqualified.conf
+      content: >
+        unqualified-search-registries =
+        ["registry.fedoraproject.org",
+        "registry.access.redhat.com",
+        "registry.centos.org",
+        "docker.io"]

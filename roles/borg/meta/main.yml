@@ -1,0 +1,15 @@
+---
+
+argument_specs:
+  main:
+    short_description: The main entry point for the borg role.
+    options:
+      repository:
+        type: "str"
+        description: "Repository to use for the backup."
+        required: yes
+
+      passphrase:
+        type: "str"
+        description: "Passphrase to use for the backup repository."
+        required: yes
