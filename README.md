@@ -11,6 +11,10 @@
 
 ## Execution
 
+The command below provides an example on how the playbook can be executed. The
+optional roles tagged with `private` and `backuped` will be used, and required
+variables will be read from the `params.yml` and `secret_params.yml` files.
+
 ```
 ansible-playbook --ask-vault-password --user root -e @params.yml -e @secret_params.yml -i '<host>,' -t private,backuped site.yml
 ```
