@@ -1,0 +1,6 @@
+---
+- name: Restarting wg-quick@wgvpn0 service
+  ansible.builtin.service:
+    name: wg-quick@wgvpn0
+    state: restarted
+    enabled: yes

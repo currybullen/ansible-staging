@@ -1,0 +1,28 @@
+---
+
+argument_specs:
+  main:
+    short_description: The main entry point for the wg-vpn-server role.
+    options:
+      host_address:
+        description: "IP address to be assigned to the wireguard interface on the host."
+        type: "str"
+        required: yes
+
+      clients:
+        description: "Descriptions of the clients."
+        type: "list"
+        elements: "dict"
+        suboptions:
+          name:
+            description: "A name that easily distinguishes the client."
+            type: "str"
+          ip:
+            description: "The IP addresses the client should be allowed to use."
+            type: "str"
+            required: yes
+          key:
+            description: "The public key of the client."
+            type: "str"
+            required: yes
+        required: yes
