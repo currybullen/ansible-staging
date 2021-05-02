@@ -1,7 +1,6 @@
 [Unit]
 Description=borgmatic backup
 Wants=network-online.target
-Before=borgmatic-check.service
 After=network-online.target
 ConditionACPower=true
 
